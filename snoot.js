@@ -104,18 +104,51 @@ function copyBillingAddress() {
 // function to validate address - billing & deliveryDay
 function validateAddress(fieldsetId) {
     var inputElements = document.querySelectorAll("#" + fieldsetId + " input");
-    var errorDiv = document.querySelectorAll("#" + fieldsetId + " .errorMessage"[0]);
+    var errorDiv = document.querySelectorAll("#" + fieldsetId + " .errorMessage")[0];
     var fieldsetValidity = true;
     var elementCount = inputElements.length;
     var currentElement;
     try {
-        alert("I am executing the try clause");
-    }
-    catch(msg) {
+        // loop through input fields looking for blanks
+        for (var i = 0; i < elementCount; i++) {
+            currentElement = inputElements[i];
+            // blanks
+            if (currentElement.value === "") {
+                currentElement.style.background = "rgb(255,233,233)";
+                fieldsetValidity = false;
+            }
+            // not blanks
+            else {
+                currentElement.style.background = "white";
+            }
+        }
+        // validate select list field
+        currentElement = document.querySelectorAll("#" + fieldsetId + " select")[0];
+        if (currentElement.selectedIndex === -1) {
+            currentElement.style.border = "1px solid red";
+            fieldsetValidity = false;
+        }
+        else {
+            currentElement.style.border = "";
+        }
+        // action for invalid fieldsetId
+        if (fieldsetValidity === false) {
+            if (fieldsetId === "billingAddress") {
+                throw "Please complete all Billing Address Information."
+            } else {
+                throw "Please complete all Delivery Address Information."
+            }
+        }
+        else {
+            errorDiv.style.display = "none";
+            errorDiv.innerHTML = "";
+        }
+    } catch (msg) {
         errorDiv.style.display = "block";
-        errorDiv.innerHTML
+        errorDiv.innerHTML = msg;
+        formValidity = false;
     }
-} 
+}
 
 // function to validate entire formValidity
 function validateForm(evt) {
@@ -125,7 +158,7 @@ function validateForm(evt) {
         evt.returnValue = false;
     }
     formValidity = true;
-    
+
     validateAddress("billingAddress");
     validateAddress("deliveryAddress");
 
