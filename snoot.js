@@ -38,7 +38,7 @@ function updateDays() {
     var dates = deliveryDay.getElementsByTagName("option");
     var deliveryMonth = document.getElementById("delivMo");
     var deliveryYear = document.getElementById("delivYr");
-// cover for no month selectedIndex
+    // cover for no month selectedIndex
     if (deliveryMonth.selectedIndex === -1) {
         return;
     }
@@ -105,6 +105,34 @@ function copyBillingAddress() {
     }
 }
 
+// function to validate custom message
+function validateMessage() {
+    var msgBox = document.getElementById("customText");
+    var errorDiv = document.querySelectorAll("#message" + " .errorMessage")[0];
+    var fieldsetValidity = true;
+    try {
+        // validate checkbox and textarea custom message
+        if (document.getElementById("custom").checked && (msgBox.value === "" || msgBox.value === placeholder)) {
+            throw "Please enter your Custom Message text.";
+        } else {
+            errorDiv.style.display = "none";
+            errorDiv.innerHTML = "";
+        }
+        // action for invalid fieldsetId
+        if (fieldsetValidity === false) {
+            throw "Please enter your custom message text";
+        } else {
+            errorDiv.style.display = "none";
+            errorDiv.innerHTML = "";
+            msgBox.style.background = "white";
+        }
+    } catch (msg) {
+        errorDiv.style.display = "block";
+        errorDiv.innerHTML = msg;
+        msgBox.style.background = "rgb(255,233,233)";
+        formValidity = false;
+    }
+}
 // function to validate delivery date
 function validateDeliveryDate() {
     var selectElements = document.querySelectorAll("#deliveryDate" + " select");
@@ -140,9 +168,9 @@ function validateDeliveryDate() {
     }
 }
 
-// function to validate delivery date
-function validateDeliveryDate() {
-    var errorDiv = document.querySelectorAll("#deliveryDate" + " .errorMessage")[0];
+// function to validate payment
+function validatePayment() {
+    var errorDiv = document.querySelectorAll("#paymentInfo" + " .errorMessage")[0];
     var fieldsetValidity = true;
     var ccNumElement = document.getElementById("ccNum");
     var selectElements = document.querySelectorAll("#paymentInfo" + " select");
@@ -152,10 +180,29 @@ function validateDeliveryDate() {
     var currentElement;
     // this is where we were yesterday
     try {
-        // loop through select fields looking for blanks
+        // validate radio buttons one must be on
+        if (!cards[0].checked && !cards[1].checked && !cards[2].checked && !cards[3].checked) {
+            for (var i = 0; i < cards.length; i++) {
+                cards[i].style.outline = "1px solid red";
+            }
+            fieldsetValidity = false;
+        } else {
+            for (var i = 0; i < cards.length; i++) {
+                cards[i].style.outline = "";
+            }
+        }
+
+        // validate req'd card nbr
+        if (ccNumElement.value === "") {
+            ccNumElement.style.background = "rgb(255, 233, 233)";
+            formValidity = false;
+        } else {
+            ccNumElement.style.background = "white";
+        }
+        // validate expiration date
         for (var i = 0; i < elementCount; i++) {
             currentElement = selectElements[i];
-            // blanks
+            //blanks
             if (currentElement.selectedIndex === -1) {
                 currentElement.style.border = "1px solid red";
                 fieldsetValidity = false;
@@ -165,19 +212,21 @@ function validateDeliveryDate() {
                 currentElement.style.border = "";
             }
         }
-        // action for invalid fieldsetId
-        if (fieldsetValidity === false) {
-            throw "Please specify a Delivery Date.";
-        } else {
-            errorDiv.style.display = "none";
-            errorDiv.innerHTML = "";
-        }
+         // action for invalid fieldsetId
+    if (fieldsetValidity === false) {
+        throw "Please complete all payment info.";
+    } else {
+        errorDiv.style.display = "none";
+        errorDiv.innerHTML = "";
+    } 
+   
     } catch (msg) {
         errorDiv.style.display = "block";
         errorDiv.innerHTML = msg;
         formValidity = false;
     }
 }
+
 
 // function to validate address - billing & deliveryDay
 function validateAddress(fieldsetId) {
@@ -208,22 +257,45 @@ function validateAddress(fieldsetId) {
         } else {
             currentElement.style.border = "";
         }
-        // action for invalid fieldsetId
-        if (fieldsetValidity === false) {
-            if (fieldsetId === "billingAddress") {
-                throw "Please complete all Billing Address Information."
-            } else {
-                throw "Please complete all Delivery Address Information."
-            }
-        } else {
-            errorDiv.style.display = "none";
-            errorDiv.innerHTML = "";
+
+        for (var i = 0; i < cards.length; i++) {
+            cards[i].style.outline = "1px solid red";
         }
-    } catch (msg) {
-        errorDiv.style.display = "block";
-        errorDiv.innerHTML = msg;
-        formValidity = false;
+        fieldsetValidity = false;
+    } else {
+        ccNumElement.style.background = "white";
     }
+
+    // action for invalid fieldsetId
+    if (fieldsetValidity === false) {
+        throw "Please complete all payment info.";
+    } else {
+        errorDiv.style.display = "none";
+        errorDiv.innerHTML = "";
+    }
+} catch (msg) {
+    errorDiv.style.display = "block";
+    errorDiv.innerHTML = msg;
+    formValidity = false;
+}
+}
+
+// action for invalid fieldsetId
+if (fieldsetValidity === false) {
+    if (fieldsetId === "billingAddress") {
+        throw "Please complete all Billing Address Information."
+    } else {
+        throw "Please complete all Delivery Address Information."
+    }
+} else {
+    errorDiv.style.display = "none";
+    errorDiv.innerHTML = "";
+}
+} catch (msg) {
+    errorDiv.style.display = "block";
+    errorDiv.innerHTML = msg;
+    formValidity = false;
+}
 }
 
 // function to validate entire formValidity
@@ -238,6 +310,7 @@ function validateForm(evt) {
     validateAddress("billingAddress");
     validateAddress("deliveryAddress");
     validateDeliveryDate();
+    validatePayment();
 
     if (formValidity === true) { // form is valid
         document.getElementById("errorText").innerHTML = "";
@@ -255,6 +328,7 @@ function setUpPage() {
     removeSelectDefaults();
     setUpDays();
     createEventListeners();
+
 }
 
 // function to create our event listeners
