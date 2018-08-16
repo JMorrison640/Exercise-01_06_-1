@@ -31,7 +31,7 @@ function setUpDays() {
     thirtyOne.appendChild(dates[29].cloneNode(true));
     thirtyOne.appendChild(dates[30].cloneNode(true));
 }
-
+//
 // function to set up the list of days based on the selected month
 function updateDays() {
     var deliveryDay = document.getElementById("delivDy");
@@ -73,8 +73,7 @@ function updateDays() {
 function autoCheckCustom() {
     var messageBox = document.getElementById("customText");
     // textarea has messafe, check the box
-    if (messageBox.value !== "" &&
-        messageBox.value !== messageBox.placeholder) {
+    if (messageBox.value !== "" && messageBox.value !== messageBox.placeholder) {
         document.getElementById("custom").checked = "checked";
     }
     // textarea has no message, uncheck the box
@@ -92,8 +91,7 @@ function copyBillingAddress() {
         for (var i = 0; i < billingInputElements.length; i++) {
             deliveryInputElements[i + 1].value = billingInputElements[i].value;
         }
-        document.querySelector("#deliveryAddress select").value =
-            document.querySelector("#billingAddress select").value
+        document.querySelector("#deliveryAddress select").value = document.querySelector("#billingAddress select").value
 
     }
     // duplicate address - checkboxnot checked - erase
@@ -117,13 +115,6 @@ function validateMessage() {
         } else {
             errorDiv.style.display = "none";
             errorDiv.innerHTML = "";
-        }
-        // action for invalid fieldsetId
-        if (fieldsetValidity === false) {
-            throw "Please enter your custom message text";
-        } else {
-            errorDiv.style.display = "none";
-            errorDiv.innerHTML = "";
             msgBox.style.background = "white";
         }
     } catch (msg) {
@@ -133,6 +124,49 @@ function validateMessage() {
         formValidity = false;
     }
 }
+// function to validate create account
+function validateCreateAccount() {
+    var errorDiv = document.querySelectorAll("#message" + " .errorMessage")[0];
+    var usernameElement = document.getElementById("username");
+    var pass1Element = document.getElementById("pass1");
+    var pass2Element = document.getElementById("pass2");
+    var invColor = "rgb(255,233,233)";
+    var passwordMismatch = false;
+    var fieldsetValidity = true;
+    usernameElement.style.background = "white";
+    pass1Element.style.background = "white";
+    pass2Element.style.background = "white";
+    errorDiv.style.display = "none";
+    errorDiv.innerHTML = "";
+    try {
+        if (usernameElement.value !== "" && pass1Element.value !== "" && pass2Element.value !== "") {
+            // one or more fields has data
+            if (pass1Element.value !== pass2Element.value) { //verify passwords match
+                throw "Passwords entered do not match, please re-enter.";
+            }
+
+        } else if (usernameElement.value === "" && pass1Element.value === "" && pass2Element.value === "") { // no fields have data
+            fieldsetValidity = true;
+            pass1Mismatch = false;
+        }
+        else {
+            throw "Please enter all fields to Create Account.";
+        }
+    } catch (msg) {
+        errorDiv.style.display = "block";
+        errorDiv.innerHTML = msg;
+        pass1Element.style.background = invColor;
+        pass2Element.style.background = invColor;
+        formValidity = false;
+        if (passwordMismatch) {
+            usernameElement.style.background = "white";
+        }
+        else {
+            usernameElement.style.background = invColor;
+        }
+    }
+}
+
 // function to validate delivery date
 function validateDeliveryDate() {
     var selectElements = document.querySelectorAll("#deliveryDate" + " select");
@@ -212,14 +246,19 @@ function validatePayment() {
                 currentElement.style.border = "";
             }
         }
-         // action for invalid fieldsetId
-    if (fieldsetValidity === false) {
-        throw "Please complete all payment info.";
-    } else {
-        errorDiv.style.display = "none";
-        errorDiv.innerHTML = "";
-    } 
-   
+        // action for invalid fieldsetId
+        if (cvvElement.value === "") {
+            cvvElement.style.background = "rgb(255, 233, 233)";
+            formValidity === false;
+        } else {
+            cvvElement.style.background = "white"
+        }
+        if (fieldsetValidity === false) {
+            throw "Please complete all Payment info."
+        } else {
+            errorDiv.style.display = "none";
+            errorDiv.innerHTML = "";
+        }
     } catch (msg) {
         errorDiv.style.display = "block";
         errorDiv.innerHTML = msg;
@@ -257,46 +296,24 @@ function validateAddress(fieldsetId) {
         } else {
             currentElement.style.border = "";
         }
-
-        for (var i = 0; i < cards.length; i++) {
-            cards[i].style.outline = "1px solid red";
+        // action for invalid fieldsetId
+        if (fieldsetValidity === false) {
+            if (fieldsetId === "billingAddress") {
+                throw "Please complete all Billing Address Information."
+            } else {
+                throw "Please complete all Delivery Address Information."
+            }
+        } else {
+            errorDiv.style.display = "none";
+            errorDiv.innerHTML = "";
         }
-        fieldsetValidity = false;
-    } else {
-        ccNumElement.style.background = "white";
+    } catch (msg) {
+        errorDiv.style.display = "block";
+        errorDiv.innerHTML = msg;
+        formValidity = false;
     }
-
-    // action for invalid fieldsetId
-    if (fieldsetValidity === false) {
-        throw "Please complete all payment info.";
-    } else {
-        errorDiv.style.display = "none";
-        errorDiv.innerHTML = "";
-    }
-} catch (msg) {
-    errorDiv.style.display = "block";
-    errorDiv.innerHTML = msg;
-    formValidity = false;
-}
 }
 
-// action for invalid fieldsetId
-if (fieldsetValidity === false) {
-    if (fieldsetId === "billingAddress") {
-        throw "Please complete all Billing Address Information."
-    } else {
-        throw "Please complete all Delivery Address Information."
-    }
-} else {
-    errorDiv.style.display = "none";
-    errorDiv.innerHTML = "";
-}
-} catch (msg) {
-    errorDiv.style.display = "block";
-    errorDiv.innerHTML = msg;
-    formValidity = false;
-}
-}
 
 // function to validate entire formValidity
 function validateForm(evt) {
@@ -311,6 +328,9 @@ function validateForm(evt) {
     validateAddress("deliveryAddress");
     validateDeliveryDate();
     validatePayment();
+    validateMessage();
+    validateCreateAccount();
+
 
     if (formValidity === true) { // form is valid
         document.getElementById("errorText").innerHTML = "";
@@ -328,10 +348,9 @@ function setUpPage() {
     removeSelectDefaults();
     setUpDays();
     createEventListeners();
-
 }
 
-// function to create our event listeners
+//     function to create our event listeners
 function createEventListeners() {
     var deliveryMonth = document.getElementById("delivMo");
     if (deliveryMonth.addEventListener) {
